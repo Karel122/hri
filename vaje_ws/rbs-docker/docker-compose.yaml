@@ -1,0 +1,34 @@
+services:
+
+  rosmaster:
+    image: ros:noetic
+    container_name: rosmaster
+    command: stdbuf -o L roscore
+    network_mode: host
+    env_file: .env
+      
+  jupyter:
+    build: .
+    stdin_open: true  # equivalent to `-i`
+    tty: true         # equivalent to `-t`
+    network_mode: host  
+    env_file: .env
+    environment:
+      - DISPLAY=${DISPLAY}  # Forward the X11 display
+      - QT_X11_NO_MITSHM=1  # Prevent issues with shared memory in some cases
+      - QT_SCALE_FACTOR=1
+    #############################################
+    # example commands when ADDITIONAL_COMMAND=1
+    #############################################
+    # command: tail -f /dev/null   
+    # command: /bin/bash
+    # command: rviz
+    #
+    devices:
+      - /dev/dri:/dev/dri   # Direct rendering access to the GPU
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 socket for display forwarding
+      - ./configs:/rbs_ws/src/configs                            # overwrite
+      - ./robotblockset_python:/rbs_ws/src/robotblockset_python  # overwrite
+      - ./jupyter_entrypoint.sh:/entrypoint.sh                   # overwrite
+    privileged: true
